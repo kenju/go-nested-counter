@@ -1,40 +1,33 @@
 package nestedcounter
 
-type Count int
+import (
+	"testing"
+)
 
-type RootKey interface {}
+func TestCounter_Increment(t *testing.T) {
+	counter := NewCounter()
 
-type NestedKey interface {}
+	counter.Increment("foo", 201807101200, 100)
+	counter.Increment("foo", 201807101200, 100)
+	counter.Increment("foo", 201807101200, 100)
 
-// Counter count incremented value per RootKey and NestedKey.
-// Counter has a mapping table internally to count the values.
-type Counter struct {
-	rootKeyMap map[RootKey]map[NestedKey]Count
-}
+	counter.Increment("bar", 201807101200, 200)
+	counter.Increment("bar", 201807101200, 200)
 
-// NewCounter returns the reference to a new Counter.
-func NewCounter() *Counter {
-	return &Counter{
-		rootKeyMap: map[RootKey]map[NestedKey]Count{},
+	if count := counter.GetCount("foo", 201807101200); count != 300 {
+		t.Errorf("GetCount expects %d, got=%d", 300, count)
 	}
-}
 
-// Increment increment the count value by one for given rootKey and nestedKey.
-// Create a new mapping if the given rootKey/nestedKey pair does not exist yet.
-func (c *Counter) Increment(rootKey RootKey, nestedKey NestedKey, impression Count) {
-	if _, ok := c.rootKeyMap[rootKey]; ok {
-		c.rootKeyMap[rootKey][nestedKey] += impression
-	} else {
-		c.rootKeyMap[rootKey] = map[NestedKey]Count{nestedKey: impression}
+	if count := counter.GetCount("bar", 201807101200); count != 400 {
+		t.Errorf("GetCount expects %d, got=%d", 400, count)
 	}
-}
 
-// GetCount return the count value by given rootKey/nestedKey.
-func (c *Counter) GetCount(rootKey RootKey, nestedKey NestedKey) int {
-	return int(c.rootKeyMap[rootKey][nestedKey])
-}
+	// when key (identifier) does not exist
+	if count := counter.GetCount("not exist", 201807101200); count != 0 {
+		t.Errorf("GetCount expects %d, got=%d", 0, count)
+	}
 
-// Size return the number of RootKey in the mapping table.
-func (c *Counter) Size() int {
-	return len(c.rootKeyMap)
+	if size := counter.Size(); size != 2 {
+		t.Errorf("Size expects %d, got=%d", 2, size)
+	}
 }
