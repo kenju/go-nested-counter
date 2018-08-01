@@ -6,10 +6,12 @@ type RootKey interface {}
 
 type NestedKey interface {}
 
+type RootKeyMap map[RootKey]map[NestedKey]Count
+
 // Counter count incremented value per RootKey and NestedKey.
 // Counter has a mapping table internally to count the values.
 type Counter struct {
-	RootKeyMap map[RootKey]map[NestedKey]Count
+	RootKeyMap RootKeyMap
 }
 
 // NewCounter returns the reference to a new Counter.
